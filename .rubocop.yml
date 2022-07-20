@@ -1,0 +1,68 @@
+inherit_mode:
+  merge:
+    - Exclude
+
+require:
+  - standard
+  - rubocop-rspec
+
+inherit_gem:
+  standard: config/base.yml
+
+RSpec:
+  Enabled: false
+
+RSpec/Focus:
+  Enabled: true
+
+RSpec/EmptyExampleGroup:
+  Enabled: true
+
+RSpec/EmptyLineAfterExampleGroup:
+  Enabled: true
+
+RSpec/EmptyLineAfterFinalLet:
+  Enabled: true
+
+RSpec/EmptyLineAfterHook:
+  Enabled: true
+
+RSpec/EmptyLineAfterSubject:
+  Enabled: true
+
+RSpec/HookArgument:
+  Enabled: true
+
+RSpec/HooksBeforeExamples:
+  Enabled: true
+
+RSpec/ImplicitExpect:
+  Enabled: true
+
+RSpec/IteratedExpectation:
+  Enabled: true
+
+RSpec/LetBeforeExamples:
+  Enabled: true
+
+RSpec/MissingExampleGroupArgument:
+  Enabled: true
+
+RSpec/ReceiveCounts:
+  Enabled: true
+
+RSpec/Capybara/CurrentPathExpectation:
+  Enabled: true
+
+RSpec/FactoryBot/AttributeDefinedStatically:
+  Enabled: true
+
+RSpec/FactoryBot/CreateList:
+  Enabled: true
+
+RSpec/ExampleLength:
+  Enabled: false
+
+RSpec/NamedSubject:
+  Enabled: false
+
