@@ -2,6 +2,11 @@ module NaturalDSL
   class Stack < Array
     using StringDemodulize
 
+    # TODO: spec
+    def try_pop_if(expected_class)
+      pop if last.is_a?(expected_class)
+    end
+
     def pop_if(expected_class)
       return pop if last.is_a?(expected_class)
 

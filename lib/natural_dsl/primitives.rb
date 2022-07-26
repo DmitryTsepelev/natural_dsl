@@ -12,6 +12,13 @@ module NaturalDSL
       end
     end
 
+    # TODO: spec
+    Tokens = Struct.new(:tokens) do
+      def inspect
+        "Tokens(#{tokens.map(&:name).join(", ")})"
+      end
+    end
+
     Keyword = Struct.new(:type) do
       def inspect
         "Keyword(#{type})"

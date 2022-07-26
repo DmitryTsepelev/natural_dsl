@@ -22,7 +22,14 @@ module NaturalDSL
     private
 
     def check_expectation(expectation, args)
-      if expectation.is_a?(Primitives::Keyword)
+      if expectation == Primitives::Tokens
+        # TODO: spec
+        loop do
+          token = @vm.stack.try_pop_if(Primitives::Token)
+          break unless token
+          args << token
+        end
+      elsif expectation.is_a?(Primitives::Keyword)
         @vm.stack.pop_if_keyword(expectation.type)
       else
         args << @vm.stack.pop_if(expectation)

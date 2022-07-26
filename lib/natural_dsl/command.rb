@@ -30,6 +30,11 @@ module NaturalDSL
 
     private
 
+    # TODO: spec
+    def tokens
+      expectations << Primitives::Tokens
+    end
+
     def token
       expectations << Primitives::Token
     end
