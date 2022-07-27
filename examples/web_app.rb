@@ -5,7 +5,7 @@ require "json"
 gemfile do
   source "https://rubygems.org"
 
-  gem "natural_dsl", path: "/Users/dmitrytsepelev/dev/natural_dsl"
+  gem "natural_dsl"
   gem "pg"
 end
 
@@ -44,7 +44,10 @@ class App
   def serve_from(port)
     server = TCPServer.new(port)
 
-    while session = server.accept
+    loop do
+      session = server.accept
+      break unless session
+
       request = session.gets
       handle_request(request, session)
     end
@@ -130,7 +133,7 @@ lang = NaturalDSL::Lang.define do
   command :list do
     token
     keyword :expose
-    tokens
+    zero_or_more token
 
     execute do |vm, resource, *expose|
       app = vm.read_variable(:app)
@@ -143,7 +146,7 @@ lang = NaturalDSL::Lang.define do
     keyword :by
     token
     keyword :expose
-    tokens
+    zero_or_more token
 
     execute do |vm, resource, key, *expose|
       app = vm.read_variable(:app)

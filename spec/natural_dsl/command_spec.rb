@@ -1,59 +1,73 @@
 RSpec.describe NaturalDSL::Command do
-  describe "#build" do
-    subject { described_class.build(command_name, &command_block) }
+  let(:command) { described_class.new(:some_command) }
 
-    let(:command_name) { :some_command }
-
-    shared_examples "adds primitive" do |primitive_class|
-      it "adds #{primitive_class} to expectations" do
-        expect(subject.expectations.size).to eq(1)
-        expect(subject.expectations.last).to eq(primitive_class)
-      end
+  shared_examples "adds primitive and returns expectation" do |primitive_class|
+    it "adds #{primitive_class} to expectations" do
+      subject
+      expect(command.expectations.size).to eq(1)
+      expect(command.expectations.last).to be_a(primitive_class)
     end
 
-    context "when token is called inside block" do
-      let(:command_block) { proc { token } }
+    it "returns #{primitive_class} instance" do
+      expect(subject).to be_a(primitive_class)
+    end
+  end
 
-      include_examples "adds primitive", NaturalDSL::Primitives::Token
+  describe "#token" do
+    subject { command.send(:token) }
+
+    include_examples "adds primitive and returns expectation", NaturalDSL::Expectations::Token
+  end
+
+  describe "#value" do
+    subject { command.send(:value, :some_method) }
+
+    include_examples "adds primitive and returns expectation", NaturalDSL::Expectations::Value
+
+    it "adds method_name to value_method_names" do
+      subject
+      expect(command.value_method_names.size).to eq(1)
+      expect(command.value_method_names.last).to eq(:some_method)
     end
 
-    context "when value is called inside block" do
-      let(:command_block) { proc { value :some_method } }
+    context "when value is called without argument" do
+      subject { command.send(:value) }
 
-      include_examples "adds primitive", NaturalDSL::Primitives::Value
+      include_examples "adds primitive and returns expectation", NaturalDSL::Expectations::Value
 
-      it "adds method_name to value_method_names" do
-        expect(subject.value_method_names.size).to eq(1)
-        expect(subject.value_method_names.last).to eq(:some_method)
-      end
-
-      context "when value is called without argument" do
-        let(:command_block) { proc { value } }
-
-        include_examples "adds primitive", NaturalDSL::Primitives::Value
-
-        it "adds default method_name to value_method_names" do
-          expect(subject.value_method_names.size).to eq(1)
-          expect(subject.value_method_names.last).to eq(:value)
-        end
+      it "adds default method_name to value_method_names" do
+        subject
+        expect(command.value_method_names.size).to eq(1)
+        expect(command.value_method_names.last).to eq(:value)
       end
     end
+  end
 
-    context "when keyword is called inside block" do
-      let(:command_block) { proc { keyword :something } }
+  describe "#keyword" do
+    subject { command.send(:keyword, :something) }
 
-      it "adds Keyword to expectations" do
-        expect(subject.expectations.size).to eq(1)
-        expect(subject.expectations.last).to eq(NaturalDSL::Primitives::Keyword.new(:something))
-      end
+    it "adds Keyword to expectations" do
+      subject
+      expect(command.expectations.size).to eq(1)
+      expect(command.expectations.last).to be_a(NaturalDSL::Expectations::Keyword)
+      expect(command.expectations.last.type).to eq(:something)
     end
+  end
 
-    context "when execute is called inside block" do
-      let(:command_block) { proc { execute {} } }
+  describe "#execute" do
+    subject { command.send(:execute, &proc {}) }
 
-      it "sets execution_block" do
-        expect(subject.execution_block).to be_a(Proc)
-      end
+    it "sets execution_block" do
+      subject
+      expect(command.execution_block).to be_a(Proc)
     end
+  end
+
+  describe "#zero_or_more" do
+    subject { NaturalDSL::Expectations::Token.new }
+
+    before { command.send(:zero_or_more, subject) }
+
+    it { is_expected.to be_zero_or_more }
   end
 end

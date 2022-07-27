@@ -23,11 +23,7 @@ module NaturalDSL
     private
 
     def register_keywords(command)
-      command.expectations.filter(&method(:keyword?)).each(&method(:register_keyword))
-    end
-
-    def keyword?(expectation)
-      expectation.is_a?(Primitives::Keyword)
+      command.expectations.filter(&:keyword?).each(&method(:register_keyword))
     end
 
     def register_keyword(keyword)
