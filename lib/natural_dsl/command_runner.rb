@@ -12,7 +12,9 @@ module NaturalDSL
     end
 
     def run
-      args = @command.expectations.each_with_object([], &method(:check_expectation))
+      args = @command.expectations.flat_map do |expectation|
+        expectation.read_arguments(@vm.stack)
+      end
 
       raise_stack_not_empty_error if @vm.stack.any?
 
@@ -20,14 +22,6 @@ module NaturalDSL
     end
 
     private
-
-    def check_expectation(expectation, args)
-      if expectation.is_a?(Primitives::Keyword)
-        @vm.stack.pop_if_keyword(expectation.type)
-      else
-        args << @vm.stack.pop_if(expectation)
-      end
-    end
 
     def raise_stack_not_empty_error
       class_names = @vm.stack.map { |primitive| primitive.class.name.demodulize }

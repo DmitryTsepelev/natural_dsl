@@ -1,4 +1,5 @@
 require "natural_dsl/command_runner"
+require "natural_dsl/expectations"
 
 module NaturalDSL
   class Command
@@ -30,17 +31,27 @@ module NaturalDSL
 
     private
 
+    def zero_or_more(expectation)
+      expectation.zero_or_more
+    end
+
     def token
-      expectations << Primitives::Token
+      Expectations::Token.new.tap do |expectation|
+        expectations << expectation
+      end
     end
 
     def value(method_name = :value)
       value_method_names << method_name
-      expectations << Primitives::Value
+      Expectations::Value.new.tap do |expectation|
+        expectations << expectation
+      end
     end
 
     def keyword(type)
-      expectations << Primitives::Keyword.new(type)
+      Expectations::Keyword.new(type).tap do |expectation|
+        expectations << expectation
+      end
     end
 
     def execute(&block)

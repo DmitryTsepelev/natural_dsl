@@ -131,6 +131,26 @@ NaturalDSL::VM.run(lang) do
 end
 ```
 
+### Multiple primitives
+
+Need to consume the unknown amount of similar primitives? Use `zero_or_more`:
+
+```ruby
+lang = NaturalDSL::Lang.define do
+  command :expose do
+    zero_or_more token
+
+    execute { |_, *fields| "exposing #{fields.join(', ')}" }
+  end
+end
+
+result = NaturalDSL::VM.run(lang) do
+  expose id email
+end
+
+puts result # => exposing id, email
+```
+
 ### Alternative name for #value
 
 Sometimes you don't want to see the word `value` in your commands. In this case you can rename it by passing an argument:
@@ -163,6 +183,8 @@ result = NaturalDSL::VM.run(lang) do
   jane takes 3
   who has more
 end
+
+puts result # => jane has more
 ```
 
 ## Installation
