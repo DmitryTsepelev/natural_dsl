@@ -5,7 +5,7 @@ module NaturalDSL
     class << self
       def build(lang)
         lang.commands.each do |command_name, command|
-          define_command(lang, command_name, command)
+          define_method(command_name) { |*| command.run(self) }
         end
 
         new(lang)
@@ -14,18 +14,6 @@ module NaturalDSL
       def run(lang, &block)
         build(lang).run(&block)
       end
-
-      private
-
-      def define_command(lang, command_name, command)
-        define_method(command_name) { |*| command.run(self) }
-
-        command.value_method_names.each do |value_method_name|
-          define_method(value_method_name) do |value|
-            @stack << NaturalDSL::Primitives::Value.new(value)
-          end
-        end
-      end
     end
 
     attr_reader :variables, :stack
@@ -33,7 +21,7 @@ module NaturalDSL
     def initialize(lang)
       @lang = lang
       @variables = {}
-      @stack = NaturalDSL::Stack.new
+      @stack = Stack.new
     end
 
     def run(&block)
@@ -48,18 +36,31 @@ module NaturalDSL
       @variables[token.name]
     end
 
-    def method_missing(unknown, *args, &block)
+    def method_missing(unknown, *values, &block)
       klass = if @lang.keywords.include?(unknown)
-        NaturalDSL::Primitives::Keyword
+        Primitives::Keyword
       else
-        NaturalDSL::Primitives::Token
+        Primitives::Token
       end
+
+      lookup_value_in(values.flatten)
 
       @stack << klass.new(unknown)
     end
 
     def respond_to_missing?(*)
       true
+    end
+
+    private
+
+    def lookup_value_in(values)
+      return if values.length != 1
+      candidate = values.first
+
+      return if candidate.is_a?(Primitives::Keyword) || candidate.is_a?(Primitives::Token)
+
+      @stack << Primitives::Value.new(candidate)
     end
   end
 end

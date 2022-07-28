@@ -1,5 +1,7 @@
 require "natural_dsl"
 
+Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].sort.each { |f| require f }
+
 RSpec.configure do |config|
   config.order = :random
 
