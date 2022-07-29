@@ -6,7 +6,7 @@ RSpec.describe NaturalDSL do
         token
         keyword :to
         token
-        value :takes
+        keyword(:takes).with_value
 
         execute do |vm, city1, city2, distance|
           distances = vm.read_variable(:distances) || {}

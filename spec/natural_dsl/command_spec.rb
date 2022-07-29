@@ -19,30 +19,6 @@ RSpec.describe NaturalDSL::Command do
     include_examples "adds primitive and returns expectation", NaturalDSL::Expectations::Token
   end
 
-  describe "#value" do
-    subject { command.send(:value, :some_method) }
-
-    include_examples "adds primitive and returns expectation", NaturalDSL::Expectations::Value
-
-    it "adds method_name to value_method_names" do
-      subject
-      expect(command.value_method_names.size).to eq(1)
-      expect(command.value_method_names.last).to eq(:some_method)
-    end
-
-    context "when value is called without argument" do
-      subject { command.send(:value) }
-
-      include_examples "adds primitive and returns expectation", NaturalDSL::Expectations::Value
-
-      it "adds default method_name to value_method_names" do
-        subject
-        expect(command.value_method_names.size).to eq(1)
-        expect(command.value_method_names.last).to eq(:value)
-      end
-    end
-  end
-
   describe "#keyword" do
     subject { command.send(:keyword, :something) }
 
@@ -63,11 +39,44 @@ RSpec.describe NaturalDSL::Command do
     end
   end
 
-  describe "#zero_or_more" do
-    subject { NaturalDSL::Expectations::Token.new }
+  describe "#build" do
+    subject { command.build(&build_block) }
 
-    before { command.send(:zero_or_more, subject) }
+    let(:build_block) { proc {} }
 
-    it { is_expected.to be_zero_or_more }
+    it { is_expected.to eq(command) }
+
+    context "when block has expectation" do
+      let(:build_block) { proc { token } }
+
+      it "registers expectation" do
+        subject
+        expect(command.expectations.size).to eq(1)
+      end
+
+      context "when block has expectation with value at the last place" do
+        let(:build_block) { proc { token.with_value } }
+
+        it "not raises error" do
+          expect { subject }.not_to raise_error
+        end
+      end
+
+      context "when block has expectation with value in the middle" do
+        let(:build_block) do
+          proc {
+            keyword(:something).with_value
+            token.with_value
+          }
+        end
+
+        it "raises error" do
+          expect { subject }.to raise_error(
+            RuntimeError,
+            "Command some_command attempts to consume value after keyword :something"
+          )
+        end
+      end
+    end
   end
 end

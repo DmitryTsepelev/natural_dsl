@@ -14,7 +14,14 @@ module NaturalDSL
     end
 
     def build(&block)
-      tap { |command| command.instance_eval(&block) }
+      tap do |command|
+        command.instance_eval(&block)
+
+        invalid_expectations = command.expectations[0..-2].select(&:with_value?)
+        if invalid_expectations.any?
+          raise "Command #{command.name} attempts to consume value after #{invalid_expectations.first}"
+        end
+      end
     end
 
     def run(vm)
@@ -25,25 +32,10 @@ module NaturalDSL
       @expectations ||= []
     end
 
-    def value_method_names
-      @value_method_names ||= []
-    end
-
     private
-
-    def zero_or_more(expectation)
-      expectation.zero_or_more
-    end
 
     def token
       Expectations::Token.new.tap do |expectation|
-        expectations << expectation
-      end
-    end
-
-    def value(method_name = :value)
-      value_method_names << method_name
-      Expectations::Value.new.tap do |expectation|
         expectations << expectation
       end
     end

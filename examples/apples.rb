@@ -8,12 +8,14 @@ end
 
 lang = NaturalDSL::Lang.define do
   command :john do
-    value :takes
+    keyword(:takes).with_value
+
     execute { |vm, value| vm.assign_variable(:john, value) }
   end
 
   command :jane do
-    value :takes
+    keyword(:takes).with_value
+
     execute { |vm, value| vm.assign_variable(:jane, value) }
   end
 

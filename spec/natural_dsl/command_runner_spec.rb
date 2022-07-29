@@ -68,6 +68,44 @@ RSpec.describe NaturalDSL::CommandRunner do
             expect(execute_block).to have_received(:call).with(vm)
           end
         end
+
+        context "when keyword has value" do
+          let(:lang) do
+            execute_block_closure = execute_block
+
+            NaturalDSL::Lang.define do
+              command(:some_command) do
+                keyword(:keyword1).with_value
+
+                execute(&execute_block_closure)
+              end
+            end
+          end
+
+          include_context "empty stack", "Keyword"
+
+          context "when stack contains only keyword" do
+            before do
+              vm.stack << NaturalDSL::Primitives::Keyword.new(:keyword1)
+            end
+
+            include_context "empty stack", "Value"
+          end
+
+          context "when stack contains keyword with value" do
+            let(:value) { NaturalDSL::Primitives::Value.new(42) }
+
+            before do
+              vm.stack << value
+              vm.stack << NaturalDSL::Primitives::Keyword.new(:keyword1)
+            end
+
+            it "calls command with value" do
+              expect(subject).to eq(42)
+              expect(execute_block).to have_received(:call).with(vm, value)
+            end
+          end
+        end
       end
 
       context "when command expects token" do
@@ -123,58 +161,43 @@ RSpec.describe NaturalDSL::CommandRunner do
             end
           end
         end
-      end
 
-      context "when command expects value" do
-        let(:lang) do
-          execute_block_closure = execute_block
+        context "when token has value" do
+          let(:lang) do
+            execute_block_closure = execute_block
 
-          NaturalDSL::Lang.define do
-            command(:some_command) do
-              value
+            NaturalDSL::Lang.define do
+              command(:some_command) do
+                token.with_value
 
-              execute(&execute_block_closure)
-            end
-          end
-        end
-
-        include_context "empty stack", "Value"
-
-        context "when stack contains matching primitive" do
-          let(:value) { NaturalDSL::Primitives::Value.new(42) }
-
-          before do
-            vm.stack << value
-          end
-
-          it "calls command with token" do
-            expect(subject).to eq(42)
-            expect(execute_block).to have_received(:call).with(vm, value)
-          end
-
-          context "when command expects token and value" do
-            let(:lang) do
-              execute_block_closure = execute_block
-
-              NaturalDSL::Lang.define do
-                command(:some_command) do
-                  token
-                  value
-
-                  execute(&execute_block_closure)
-                end
+                execute(&execute_block_closure)
               end
             end
+          end
 
-            let(:token_something) { NaturalDSL::Primitives::Token.new(:something) }
+          let(:token) { NaturalDSL::Primitives::Token.new(:something) }
 
+          include_context "empty stack", "Token"
+
+          context "when stack contains only token" do
             before do
-              vm.stack << token_something
+              vm.stack << token
             end
 
-            it "calls command with both tokens" do
+            include_context "empty stack", "Value"
+          end
+
+          context "when stack contains keyword with value" do
+            let(:value) { NaturalDSL::Primitives::Value.new(42) }
+
+            before do
+              vm.stack << value
+              vm.stack << token
+            end
+
+            it "calls command with value" do
               expect(subject).to eq(42)
-              expect(execute_block).to have_received(:call).with(vm, token_something, value)
+              expect(execute_block).to have_received(:call).with(vm, token, value)
             end
           end
         end

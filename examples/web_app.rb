@@ -133,7 +133,7 @@ lang = NaturalDSL::Lang.define do
   command :list do
     token
     keyword :expose
-    zero_or_more token
+    token.zero_or_more
 
     execute do |vm, resource, *expose|
       app = vm.read_variable(:app)
@@ -146,7 +146,7 @@ lang = NaturalDSL::Lang.define do
     keyword :by
     token
     keyword :expose
-    zero_or_more token
+    token.zero_or_more
 
     execute do |vm, resource, key, *expose|
       app = vm.read_variable(:app)
@@ -155,7 +155,7 @@ lang = NaturalDSL::Lang.define do
   end
 
   command :serve do
-    value :from
+    keyword(:from).with_value
 
     execute do |vm, port|
       puts "Starting server on #{port.value}"

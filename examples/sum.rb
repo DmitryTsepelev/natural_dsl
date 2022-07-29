@@ -10,7 +10,7 @@ lang = NaturalDSL::Lang.define do
   command :assign do
     keyword :variable
     token
-    value
+    keyword(:value).with_value
 
     execute { |vm, token, value| vm.assign_variable(token, value) }
   end

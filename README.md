@@ -9,7 +9,7 @@ lang = NaturalDSL::Lang.define do
     token
     keyword :to
     token
-    value :takes
+    keyword(:takes).with_value
 
     execute do |vm, city1, city2, distance|
       distances = vm.read_variable(:distances) || {}
@@ -57,16 +57,16 @@ Each _language_ consists of _commands_. Command can contain _keywords_, _tokens_
 
 - _keyword_ is something you want to be in the command to be semantically correct, but you don't need to have it to execute the command (e.g., `to`, `from`, etc.);
 - _token_ is anything that user types, and the typed word will be passed to the execution block;
-- _value_ collects the value right after it (e.g., `value 42`).
+- _value_ can be read right after the last keyword or token with `with_value` modifier (e.g., `value 42`).
 
 For instance:
 
 ```
-       keyword  token   this will be consumed by value
+       keyword  token   value
        ↓        ↓       ↓
 assign variable a value 1
 ↑                 ↑
-command name      value
+command name      keyword
 ```
 
 ### Command execution
@@ -85,7 +85,7 @@ This is how we can create a very basic command that remembers values:
 command :assign do
   keyword :variable
   token
-  value
+  keyword(:value).with_value
 
   execute do |vm, token, value|
     # how to assign?
@@ -102,7 +102,7 @@ lang = NaturalDSL::Lang.define do
   command :assign do
     keyword :variable
     token
-    value
+    keyword(:value).with_value
 
     execute { |vm, token, value| vm.assign_variable(token, value) }
   end
@@ -138,7 +138,7 @@ Need to consume the unknown amount of similar primitives? Use `zero_or_more`:
 ```ruby
 lang = NaturalDSL::Lang.define do
   command :expose do
-    zero_or_more token
+    token.zero_or_more
 
     execute { |_, *fields| "exposing #{fields.join(', ')}" }
   end
@@ -158,12 +158,12 @@ Sometimes you don't want to see the word `value` in your commands. In this case 
 ```ruby
 lang = NaturalDSL::Lang.define do
   command :john do
-    value :takes
+    keyword(:takes).with_value
     execute { |vm, value| vm.assign_variable(:john, value) }
   end
 
   command :jane do
-    value :takes
+    keyword(:takes).with_value
     execute { |vm, value| vm.assign_variable(:jane, value) }
   end
 

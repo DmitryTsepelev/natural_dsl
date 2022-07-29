@@ -16,35 +16,6 @@ RSpec.describe NaturalDSL::VM do
           expect(subject).to respond_to(:some_command)
         end
       end
-
-      context "when command has value method names" do
-        let(:lang) do
-          NaturalDSL::Lang.define do
-            command :some_command do
-              value :custom_value_method
-            end
-          end
-        end
-
-        it "defines command method" do
-          expect(subject).to respond_to(:some_command)
-        end
-
-        it "defines method for value consumption" do
-          expect(subject).to respond_to(:custom_value_method)
-        end
-
-        context "when defined value method is called" do
-          let(:value) { 42 }
-
-          it "adds value to the stack" do
-            subject.custom_value_method(value)
-
-            expect(subject.stack.size).to eq(1)
-            expect(subject.stack.last).to eq(NaturalDSL::Primitives::Value.new(value))
-          end
-        end
-      end
     end
   end
 
@@ -103,9 +74,11 @@ RSpec.describe NaturalDSL::VM do
 
   describe "#method_missing" do
     let(:method_name) { :something }
+    let(:args) { [] }
+
     let(:vm) { described_class.new(lang) }
 
-    before { vm.send(method_name) }
+    before { vm.send(method_name, *args) }
 
     context "when missing method name is not registered as a keyword" do
       let(:lang) { NaturalDSL::Lang.define {} }
@@ -113,6 +86,18 @@ RSpec.describe NaturalDSL::VM do
       it "adds token to the stack" do
         expect(vm.stack.size).to eq(1)
         expect(vm.stack.last).to eq(NaturalDSL::Primitives::Token.new(method_name))
+      end
+
+      context "when there is a value in args" do
+        let(:args) { [42] }
+
+        it "adds token and value to the stack" do
+          expect(vm.stack.size).to eq(2)
+          expect(vm.stack).to eq [
+            NaturalDSL::Primitives::Value.new(42),
+            NaturalDSL::Primitives::Token.new(method_name)
+          ]
+        end
       end
     end
 
@@ -128,6 +113,18 @@ RSpec.describe NaturalDSL::VM do
       it "adds keyword to the stack" do
         expect(vm.stack.size).to eq(1)
         expect(vm.stack.last).to eq(NaturalDSL::Primitives::Keyword.new(method_name))
+      end
+
+      context "when there is a value in args" do
+        let(:args) { [42] }
+
+        it "adds token and value to the stack" do
+          expect(vm.stack.size).to eq(2)
+          expect(vm.stack).to eq [
+            NaturalDSL::Primitives::Value.new(42),
+            NaturalDSL::Primitives::Keyword.new(method_name)
+          ]
+        end
       end
     end
   end
