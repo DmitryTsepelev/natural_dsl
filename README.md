@@ -187,6 +187,63 @@ end
 puts result # => jane has more
 ```
 
+## Want some fun?
+
+Here are a couple of ideas to work on 🙂
+
+### Optional parts
+
+Let's allow parts that can be omitted:
+
+```ruby
+lang = NaturalDSL::Lang.define do
+  command :assign do
+    keyword(:variable).optional
+    token
+    keyword(:value).with_value
+
+    execute { |vm, token, value| vm.assign_variable(token, value) }
+  end
+end
+
+result = NaturalDSL::VM.run(lang) do
+  assign variable a value 1
+  assign b value 2
+end
+```
+
+### Subcommands
+
+What if I want to start two commands with the same word? Example:
+
+```ruby
+lang = NaturalDSL::Lang.define do
+  command :mov do
+    option do
+      token.with_value
+
+      execute do |vm, register, value|
+        # do constant assigment
+      end
+    end
+
+    option do
+      token
+      token
+
+      execute do |vm, register, register_with_value|
+        # copy value from register
+      end
+    end
+  end
+end
+
+NaturalDSL::VM.run(lang) do
+  mov a 9
+  mov a b
+end
+```
+
 ## Installation
 
 Add this line to your application's Gemfile, and you're all set:
